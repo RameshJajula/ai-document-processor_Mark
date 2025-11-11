@@ -3,9 +3,9 @@ import logging
 from pipelineUtils.blob_functions import list_blobs, get_blob_content, write_to_blob
 from pipelineUtils import get_month_date
 # Libraries used in the future Document Processing client code
-from azure.identity import DefaultAzureCredential
 from azure.ai.documentintelligence import DocumentIntelligenceClient
 from azure.ai.documentintelligence.models import AnalyzeResult, AnalyzeDocumentRequest
+from azure.core.credentials import AzureKeyCredential
 import base64
 import json
 import os
@@ -14,8 +14,19 @@ import requests
 from configuration import Configuration
 config = Configuration()
 
-# Variables used by Document Processing client code
-endpoint = config.get_value("AIMULTISERVICES_ENDPOINT") # Add the AI Services Endpoint value from Azure Function App settings
+doc_config = config.get_document_intelligence_config()
+document_intel_client = None
+
+if config.is_local_mode() and doc_config.get("key"):
+  logging.info("Initializing DocumentIntelligenceClient with API key (local mode).")
+  document_intel_client = DocumentIntelligenceClient(
+      endpoint=doc_config["endpoint"], credential=AzureKeyCredential(doc_config["key"])
+  )
+else:
+  logging.info("Initializing DocumentIntelligenceClient with DefaultAzureCredential.")
+  document_intel_client = DocumentIntelligenceClient(
+      endpoint=doc_config["endpoint"], credential=config.credential
+  )
 
 name = "runDocIntel"
 bp = df.Blueprint()
@@ -41,9 +52,7 @@ def extract_text_from_blob(blobObj: dict):
 
   try:
     
-    client = DocumentIntelligenceClient(
-        endpoint=endpoint, credential=config.credential
-    )
+    client = document_intel_client
     logging.info(f"BlobObj: {blobObj}")
     # 
 

@@ -1,28 +1,32 @@
 # backendUtils/db.py
-import os
 import logging
-import json
-from azure.cosmos import CosmosClient, PartitionKey, exceptions
-from azure.identity import DefaultAzureCredential
+from azure.cosmos import CosmosClient
 from datetime import datetime
 import uuid
-# Set up logging
-logging.basicConfig(level=logging.INFO)
 
 from configuration import Configuration
 config = Configuration()
 
-# Retrieve Cosmos DB settings from environment variables
-COSMOS_DB_URI = config.get_value("COSMOS_DB_URI")
-COSMOS_DB_DATABASE = config.get_value("COSMOS_DB_DATABASE_NAME")
-COSMOS_DB_CONVERSATION_CONTAINER = config.get_value("COSMOS_DB_CONVERSATION_HISTORY_CONTAINER")
+cosmos_config = config.get_cosmos_config()
+COSMOS_DB_URI = cosmos_config["uri"]
+COSMOS_DB_DATABASE = cosmos_config["database"]
+COSMOS_DB_CONTAINER = cosmos_config["container"]
+COSMOS_DB_KEY = cosmos_config.get("key")
+
+
+def _create_cosmos_client():
+    if config.is_local_mode() and COSMOS_DB_KEY:
+        logging.info("Initializing CosmosClient with key credential (local mode).")
+        return CosmosClient(COSMOS_DB_URI, credential=COSMOS_DB_KEY)
+    logging.info("Initializing CosmosClient with DefaultAzureCredential.")
+    return CosmosClient(COSMOS_DB_URI, credential=config.credential)
+
+
+_cosmos_client = _create_cosmos_client()
+_cosmos_container = _cosmos_client.get_database_client(COSMOS_DB_DATABASE).get_container_client(COSMOS_DB_CONTAINER)
 
 
 def save_chat_message(conversation_id: str, role: str, content: str, usage: dict = None):
-    client = CosmosClient(COSMOS_DB_URI, credential=config.credential)
-    db = client.get_database_client(COSMOS_DB_DATABASE)
-    container = db.get_container_client(COSMOS_DB_CONVERSATION_CONTAINER)
-
     item = {
         "id": str(uuid.uuid4()),
         "conversationId": conversation_id,
@@ -38,4 +42,4 @@ def save_chat_message(conversation_id: str, role: str, content: str, usage: dict
             "model": usage.get("model")
         })
 
-    return container.create_item(body=item)
+    return _cosmos_container.create_item(body=item)

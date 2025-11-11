@@ -1,22 +1,36 @@
-import os
 import logging
 from dataclasses import dataclass
 import json
 
-from azure.identity import DefaultAzureCredential
 from azure.storage.blob import BlobServiceClient
 
 from configuration import Configuration
 config = Configuration()
 
-BLOB_ENDPOINT=config.get_value("DATA_STORAGE_ENDPOINT")
+storage_config = config.get_storage_config()
+storage_connection = storage_config.get("connection_string")
+storage_endpoint = storage_config.get("endpoint")
 
-# if os.getenv("IS_LOCAL"):
-#     BLOB_ENDPOINT = os.getenv("BLOB_ENDPOINT")
+blob_service_client = None
 
-token = config.credential.get_token("https://storage.azure.com/.default")
+# Prefer connection string when available (works for Azurite and shared-key scenarios)
+if storage_connection:
+    try:
+        blob_service_client = BlobServiceClient.from_connection_string(storage_connection)
+        logging.info("Initialized BlobServiceClient using connection string.")
+    except Exception as ex:
+        logging.warning(f"Failed to create BlobServiceClient from connection string: {ex}")
 
-blob_service_client = BlobServiceClient(account_url=BLOB_ENDPOINT, credential=config.credential)
+# Fall back to managed identity / CLI credentials (requires HTTPS endpoint)
+if blob_service_client is None:
+    if not storage_endpoint:
+        raise ValueError("Storage endpoint not configured. Ensure DATA_STORAGE_ENDPOINT is set.")
+    if storage_endpoint.startswith("http://"):
+        raise ValueError(
+            "Storage endpoint uses HTTP. Provide a connection string (DataStorage) or switch to HTTPS to use token credentials."
+        )
+    blob_service_client = BlobServiceClient(account_url=storage_endpoint, credential=config.credential)
+    logging.info("Initialized BlobServiceClient using endpoint and credential.")
 
 @dataclass
 class BlobMetadata:

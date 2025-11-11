@@ -1,0 +1,43 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "FUNCTIONS_WORKER_RUNTIME": "python",
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "AZURE_FUNCTIONS_ENVIRONMENT": "Development",
+    "FUNCTIONAPP_ENV": "local",
+
+    "_comment_storage": "=== Storage Configuration ===",
+    "DataStorage": "DefaultEndpointsProtocol=https;AccountName=<storage-account-name>;AccountKey=<storage-account-key>;EndpointSuffix=core.windows.net",
+    "DATA_STORAGE_ENDPOINT": "https://<storage-account-name>.blob.core.windows.net/",
+
+    "_comment_config": "=== Configuration Service (Optional for local) ===",
+    "APP_CONFIGURATION_URI": "",
+    "AZURE_APPCONFIG_CONNECTION_STRING": "",
+    "allow_environment_variables": "true",
+
+    "_comment_identity": "=== Azure Identity ===",
+    "AZURE_TENANT_ID": "<tenant-guid>",
+
+    "_comment_ai": "=== AI Services ===",
+    "AIMULTISERVICES_ENDPOINT": "https://<ai-service-name>.cognitiveservices.azure.com/",
+    "AIMULTISERVICES_KEY": "<ai-service-key>",
+
+    "_comment_openai": "=== Azure OpenAI ===",
+    "OPENAI_API_BASE": "https://<openai-resource-name>.openai.azure.com/",
+    "OPENAI_API_KEY": "<openai-api-key>",
+    "OPENAI_MODEL": "gpt-4o",
+    "OPENAI_API_VERSION": "2024-05-01-preview",
+    "OPENAI_API_EMBEDDING_MODEL": "text-embedding-ada-002",
+
+    "_comment_cosmos": "=== Cosmos DB ===",
+    "COSMOS_DB_URI": "https://<cosmos-account-name>.documents.azure.com:443/",
+    "COSMOS_DB_KEY": "<cosmos-db-key>",
+    "COSMOS_DB_DATABASE_NAME": "conversationHistoryDB",
+    "COSMOS_DB_CONVERSATION_CONTAINER": "conversationhistory",
+
+    "_comment_pipeline": "=== Pipeline Configuration ===",
+    "NEXT_STAGE": "silver",
+    "PROMPT_FILE": "prompts.yaml"
+  }
+}
+
