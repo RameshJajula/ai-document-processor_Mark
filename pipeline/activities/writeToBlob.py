@@ -20,18 +20,25 @@ def extract_text_from_blob(args: dict):
       args (dict): A dictionary containing the blob name and JSON bytes.
   """
   try:
+      json_str = args.get('json_str')
+      if not isinstance(json_str, str) or not json_str.strip():
+          raise ValueError("writeToBlob requires 'json_str' to be a non-empty string.")
+
       args['json_bytes'] = args['json_str'].encode('utf-8')
-      
+
       sourcefile = os.path.splitext(os.path.basename(args['blob_name']))[0]
-      logging.info(f"writeToBlob.py: Writing output to blob {sourcefile}-output.json with source file {sourcefile} and NEXT_STAGE {NEXT_STAGE}")
-      result = write_to_blob(NEXT_STAGE, f"{sourcefile}-output.json", args['json_bytes'])
+      # Start: RJ_AI_DOC_Update - per-instance output isolation
+      output_blob = f"{args.get('instance_id', 'general')}/{sourcefile}-output.json"
+      logging.info(f"writeToBlob.py: Writing output to blob {output_blob} (source file {sourcefile}, NEXT_STAGE {NEXT_STAGE})")
+      result = write_to_blob(NEXT_STAGE, output_blob, args['json_bytes'])
+      # End: RJ_AI_DOC_Update - per-instance output isolation
       logging.info(f"writeToBlob.py: Result of write_to_blob: {result}")
       if result:
           logging.info(f"writeToBlob.py: Successfully wrote output to blob {args['blob_name']}")
           return {
               "success": True,
               "blob_name": args['blob_name'],
-              "output_blob": f"{sourcefile}-output.json"
+              "output_blob": output_blob
           }
       else:
           logging.error(f"Failed to write output to blob {args['blob_name']}")

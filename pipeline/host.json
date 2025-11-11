@@ -8,5 +8,13 @@
     "appConfiguration": {
       "enabled": false
     }
+  },
+  "logging": {
+    "logLevel": {
+      "Default": "Warning",
+      "Host.Results": "Error",
+      "Host.Startup": "Warning",
+      "Function": "Information"
+    }
   }
 }

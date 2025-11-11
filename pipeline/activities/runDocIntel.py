@@ -37,6 +37,7 @@ def normalize_blob_name(container: str, raw_name: str) -> str:
         return raw_name[len(container) + 1:]
     return raw_name
 
+# Start: RJ_AI_DOC_Update (Doc Intelligence guardrails)
 @bp.function_name(name)
 @bp.activity_trigger(input_name="blobObj")
 def extract_text_from_blob(blobObj: dict):
@@ -51,33 +52,37 @@ def extract_text_from_blob(blobObj: dict):
       raise TypeError(f"runDocIntel expected dict; got {type(blobObj)}")
 
   try:
-    
     client = document_intel_client
-    logging.info(f"BlobObj: {blobObj}")
-    # 
+    logging.info(f"[runDocIntel] Processing blob metadata: {blobObj}")
 
-    blob_name = normalize_blob_name(blobObj["container"],blobObj["name"])
-    logging.info(f"Normalized Blob Name: {blob_name}")
-    blob_content = get_blob_content(
-        container_name=blobObj["container"],
-        blob_path=blob_name
-    )
-    logging.info(f"Response status code: {blob_content}")
+    container = blobObj.get("container")
+    name = blobObj.get("name")
+    if not container or not name:
+        raise KeyError("Blob metadata must include 'container' and 'name' keys.")
 
-    
-    logging.info(f"Starting analyze document: {blob_content[:100]}...")  # Log the first 50 bytes of the file for debugging}")
+    blob_name = normalize_blob_name(container, name)
+    logging.info(f"[runDocIntel] Normalized blob path: {blob_name}")
+    blob_content = get_blob_content(container_name=container, blob_path=blob_name)
+    logging.info(f"[runDocIntel] Retrieved blob bytes length={len(blob_content)}")
+
+    logging.info("[runDocIntel] Starting analyze_document with prebuilt-read model")
     poller = client.begin_analyze_document(
-        # AnalyzeDocumentRequest Class: https://learn.microsoft.com/en-us/python/api/azure-ai-documentintelligence/azure.ai.documentintelligence.models.analyzedocumentrequest?view=azure-python
-        "prebuilt-read", AnalyzeDocumentRequest(bytes_source=blob_content)
+        "prebuilt-read",
+        AnalyzeDocumentRequest(bytes_source=blob_content)
       )
-    
+
     result: AnalyzeResult = poller.result()
-    logging.info(f"Analyze document completed with status: {result}")
-    if result.paragraphs:    
-        paragraphs = "\n".join([paragraph.content for paragraph in result.paragraphs])            
-    
-    return paragraphs
-      
+    logging.info("[runDocIntel] Analyze document completed")
+
+    paragraphs_text = ""
+    if result.paragraphs:
+        paragraphs_text = "\n".join(paragraph.content for paragraph in result.paragraphs)
+    else:
+        logging.warning(f"[runDocIntel] No paragraphs returned for blob {blob_name}")
+
+    return paragraphs_text
+
   except Exception as e:
-    logging.error(f"Error processing {blobObj}: {e}")
+    logging.error(f"[runDocIntel] Error processing {blobObj}: {e}", exc_info=True)
     return None
+# End: RJ_AI_DOC_Update (Doc Intelligence guardrails)

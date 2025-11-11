@@ -5,6 +5,10 @@ Starts the Azure Functions app locally (PowerShell version of startLocal.sh)
 .Run from: repo root or scripts folder
 #>
 
+param(
+    [switch]$VerboseHost
+)
+
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
@@ -181,4 +185,9 @@ Write-Host "=====================================" -ForegroundColor Cyan
 Write-Host ""
 
 # Start Azure Functions host
-func start --verbose
+$funcArgs = @()
+if ($VerboseHost.IsPresent) {
+    $funcArgs += "--verbose"
+}
+
+func start @funcArgs

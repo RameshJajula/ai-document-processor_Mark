@@ -205,6 +205,7 @@ class Configuration:
             'embedding_model': self.get_value('OPENAI_API_EMBEDDING_MODEL', 'text-embedding-ada-002')
         }
     
+    # Start: RJ_AI_DOC_Update (Cosmos configuration helpers)
     def get_cosmos_config(self) -> dict:
         """Get Cosmos DB configuration."""
         return {
@@ -213,3 +214,26 @@ class Configuration:
             'database': self.get_value('COSMOS_DB_DATABASE_NAME'),
             'container': self.get_value('COSMOS_DB_CONVERSATION_CONTAINER')
         }
+
+    def get_prompts_cosmos_config(self) -> dict:
+        """Get Cosmos settings for prompt storage, falling back to conversation container."""
+        database = self.try_get_value('PROMPTS_COSMOS_DATABASE') or self.get_value('COSMOS_DB_DATABASE_NAME')
+        container = self.try_get_value('PROMPTS_COSMOS_CONTAINER') or self.get_value('COSMOS_DB_CONVERSATION_CONTAINER')
+        partition_value = self.try_get_value('PROMPTS_COSMOS_PARTITION_KEY_VALUE')
+        return {
+            'database': database,
+            'container': container,
+            'partition_key_value': partition_value
+        }
+
+    def get_prompts_cosmos_document_id(self) -> str:
+        """Document id to retrieve when PROMPT_FILE is set to COSMOS."""
+        document_id = self.try_get_value('PROMPTS_COSMOS_DOCUMENT_ID')
+        if not document_id:
+            raise Exception("PROMPTS_COSMOS_DOCUMENT_ID must be set when PROMPT_FILE is 'COSMOS'.")
+        return document_id
+    # End: RJ_AI_DOC_Update (Cosmos configuration helpers)
+
+    def get_api_key(self) -> str | None:
+        """API key used for authenticating HTTP requests (optional)."""
+        return self.try_get_value('API_KEY')

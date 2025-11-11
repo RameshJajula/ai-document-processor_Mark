@@ -26,6 +26,18 @@ _cosmos_client = _create_cosmos_client()
 _cosmos_container = _cosmos_client.get_database_client(COSMOS_DB_DATABASE).get_container_client(COSMOS_DB_CONTAINER)
 
 
+# Start: RJ_AI_DOC_Update (Cosmos container helper)
+def get_container(database_name: str, container_name: str):
+    """
+    Retrieve a Cosmos container client for arbitrary databases/containers using
+    the shared CosmosClient.
+    """
+    if not database_name or not container_name:
+        raise ValueError("Both database_name and container_name are required to open a Cosmos container.")
+    return _cosmos_client.get_database_client(database_name).get_container_client(container_name)
+# End: RJ_AI_DOC_Update (Cosmos container helper)
+
+
 def save_chat_message(conversation_id: str, role: str, content: str, usage: dict = None):
     item = {
         "id": str(uuid.uuid4()),
