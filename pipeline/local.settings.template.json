@@ -2,19 +2,27 @@
   "IsEncrypted": false,
   "Values": {
     "FUNCTIONS_WORKER_RUNTIME": "python",
-    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "AZURE_FUNCTIONS_ENVIRONMENT": "Development",
     "FUNCTIONAPP_ENV": "local",
 
     "_comment_storage": "=== Storage Configuration ===",
-    "DataStorage": "DefaultEndpointsProtocol=https;AccountName=<storage-account-name>;AccountKey=<storage-account-key>;EndpointSuffix=core.windows.net",
+    "AzureWebJobsStorage__blobServiceUri": "https://<storage-account-name>.blob.core.windows.net/",
+    "AzureWebJobsStorage__queueServiceUri": "https://<storage-account-name>.queue.core.windows.net/",
+    "AzureWebJobsStorage__tableServiceUri": "https://<storage-account-name>.table.core.windows.net/",
+    "AzureWebJobsStorage__credential": "AzureCliCredential",
+    "DataStorage__blobServiceUri": "https://<storage-account-name>.blob.core.windows.net/",
+    "DataStorage__queueServiceUri": "https://<storage-account-name>.queue.core.windows.net/",
+    "DataStorage__tableServiceUri": "https://<storage-account-name>.table.core.windows.net/",
+    "DataStorage__credential": "AzureCliCredential",
     "DATA_STORAGE_ENDPOINT": "https://<storage-account-name>.blob.core.windows.net/",
 
     "_comment_config": "=== Configuration Service (Optional for local) ===",
     "APP_CONFIGURATION_URI": "",
     "AZURE_APPCONFIG_CONNECTION_STRING": "",
     "allow_environment_variables": "true",
+    "AzureAppConfigurationDisable": "true",
 
+    "AzureWebJobsSecretStorageType": "Files",
     "_comment_identity": "=== Azure Identity ===",
     "AZURE_TENANT_ID": "<tenant-guid>",
 
@@ -31,7 +39,7 @@
 
     "_comment_cosmos": "=== Cosmos DB ===",
     "COSMOS_DB_URI": "https://<cosmos-account-name>.documents.azure.com:443/",
-    "COSMOS_DB_KEY": "<cosmos-db-key>",
+    "COSMOS_DB_KEY": "",
     "COSMOS_DB_DATABASE_NAME": "conversationHistoryDB",
     "COSMOS_DB_CONVERSATION_CONTAINER": "conversationhistory",
 
